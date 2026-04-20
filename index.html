@@ -139,9 +139,9 @@
   </div>
 
   <script>
-    const CONFIG = {
-      playerSpeed: 5,
-      playerWidth: 30,
+const CONFIG = {
+playerSpeed: 5,
+playerWidth: 30,
 playerHeight: 50,
 ballBaseSpeed: 2,
 ballSpeedIncrease: 0.5,
@@ -151,7 +151,6 @@ doorHeight: 70,
 colors: {
 player: '#ffffff',
 ball: '#2ed573',
-ballGlow: 'rgba(46, 213, 115, 0.5)',
 door: '#7bed9f',
 doorFrame: '#2ed573',
 platform: '#0f3460',
@@ -164,80 +163,48 @@ let currentLevel = 1;
 let frames = 0;
 let player, balls, door, platforms;
 let keys = { left: false, right: false };
-let audioCtx;
 window.onload = () => {
   canvas = document.getElementById('gameCanvas');
   ctx = canvas.getContext('2d');
   
-  document.getElementById('startBtn').addEventListener('click', startGame);
-  document.getElementById('retryBtn').addEventListener('click', startGame);
-  document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+  const startBtn = document.getElementById('startBtn');
+  startBtn.addEventListener('click', startGame);
+  
+  const retryBtn = document.getElementById('retryBtn');
+  retryBtn.addEventListener('click', startGame);
+  
+  const nextLevelBtn = document.getElementById('nextLevelBtn');
+  nextLevelBtn.addEventListener('click', nextLevel);
   
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
     if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
   });
+  
   document.addEventListener('keyup', (e) => {
     if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
     if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
   });
   
+  setupMobileControls();
+  requestAnimationFrame(gameLoop);
+};
+function setupMobileControls() {
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
+  
   leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
   leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; });
   rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
   rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; });
+  
   leftBtn.addEventListener('mousedown', () => keys.left = true);
   leftBtn.addEventListener('mouseup', () => keys.left = false);
   rightBtn.addEventListener('mousedown', () => keys.right = true);
   rightBtn.addEventListener('mouseup', () => keys.right = false);
-  
-  requestAnimationFrame(gameLoop);
-};
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
-function playSound(type) {
-  if (!audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  
-  switch(type) {
-    case 'jump':
-      osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.1);
-      break;
-    case 'hit':
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.3);
-      break;
-    case 'win':
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-      osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
-      osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-      osc.start(audioCtx.currentTime);
-osc.stop(audioCtx.currentTime + 0.5);
-break;
-}
 }
 function initLevel(level) {
-  player = { x: 50, y: canvas.height - 100, width: CONFIG.playerWidth, height: CONFIG.playerHeight, vx: 0 };
+  player = { x: 50, y: canvas.height - 100, width: CONFIG.playerWidth, height: CONFIG.playerHeight };
   door = { x: canvas.width - 80, y: canvas.height - 80, width: CONFIG.doorWidth, height: CONFIG.doorHeight };
   platforms = [];
   const platformCount = Math.min(level, 5);
@@ -253,7 +220,7 @@ function initLevel(level) {
   frames = 0;
 }
 function startGame() {
-  initAudio();
+  console.log('Starting game...');
   gameState = 'playing';
   currentLevel = 1;
   initLevel(currentLevel);
@@ -271,24 +238,23 @@ function nextLevel() {
 }
 function gameOver(reason) {
   gameState = 'gameover';
-  playSound('hit');
   document.getElementById('deathReason').textContent = reason;
   document.getElementById('gameOverScreen').classList.remove('hidden');
 }
 function winLevel() {
   gameState = 'win';
-  playSound('win');
   document.getElementById('winScreen').classList.remove('hidden');
 }
 function updateUI() {
-  document.getElementById('levelDisplay').textContent = `关卡：${currentLevel}`;
-  const progress = Math.min(currentLevel, 5);
-  const bars = '■'.repeat(progress) + '□'.repeat(5 - progress);
-  document.getElementById('progressDisplay').textContent = `进度：${bars}`;
+document.getElementById('levelDisplay').textContent = '关卡：' + currentLevel;
+const progress = Math.min(currentLevel, 5);
+const bars = '■'.repeat(progress) + '□'.repeat(5 - progress);
+document.getElementById('progressDisplay').textContent = '进度：' + bars;
 }
 function update() {
   if (gameState !== 'playing') return;
   frames++;
+  
   if (keys.left) player.x -= CONFIG.playerSpeed;
   if (keys.right) player.x += CONFIG.playerSpeed;
   player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
@@ -310,10 +276,16 @@ function update() {
   }
   
   for (const ball of balls) {
-    if (checkCircleRectCollision(ball, player)) { gameOver('被圆球击中了！'); return; }
+    if (checkCircleRectCollision(ball, player)) {
+      gameOver('被圆球击中了！');
+      return;
+    }
   }
   
-  if (checkRectCollision(player, door)) { winLevel(); return; }
+  if (checkRectCollision(player, door)) {
+    winLevel();
+    return;
+  }
 }
 function checkCircleRectCollision(circle, rect) {
   const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
@@ -335,11 +307,12 @@ function draw() {
   ctx.strokeStyle = 'rgba(15, 52, 96, 0.3)';
   ctx.lineWidth = 1;
   for (let x = 0; x < canvas.width; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.hei
-}
-for (let y = 0; y < canvas.height; y += 40) {
-ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-}
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y < canvas.height; y += 40) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+  
   if (gameState === 'start') return;
   
   ctx.fillStyle = CONFIG.colors.platform;
@@ -379,9 +352,9 @@ function drawBall(ball) {
   ctx.fill();
   ctx.beginPath();
   ctx.arc(ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, ball.radius * 0.3, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  ctx.fill();
-  ctx.shadowBlur = 0;
+ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+ctx.fill();
+ctx.shadowBlur = 0;
 }
 function drawDoor() {
   const x = door.x, y = door.y;
