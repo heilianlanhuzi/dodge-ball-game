@@ -35,6 +35,7 @@
       color: #c9d1d9;
       font-size: 14px;
       z-index: 10;
+      pointer-events: none;
     }
     #startScreen, #gameOverScreen, #winScreen {
       position: absolute;
@@ -151,10 +152,9 @@
 <body>
   <div id="rotateHint">
     <h1>📱 请横屏游玩</h1>
-<p>将手机旋转 90 度获得最佳体验</p>
-</div>
-
-<div id="gameContainer">
+    <p>将手机旋转 90 度获得最佳体验</p>
+  </div>
+<div id="gameContainer" tabindex="0">
 <canvas id="gameCanvas" width="800" height="450"></canvas>
 <div id="ui">
 <span id="levelDisplay">关卡：1</span>
@@ -211,18 +211,45 @@ let gameState = 'start';
 let currentLevel = 1;
 let frames = 0;
 let player, balls, door, platforms, pits;
-let keys = { left: false, right: false, jump: false };
+let keys = { left: false, right: false };
 window.onload = () => {
   canvas = document.getElementById('gameCanvas');
   ctx = canvas.getContext('2d');
   
+  // 绑定按钮事件
   document.getElementById('startBtn').addEventListener('click', startGame);
   document.getElementById('retryBtn').addEventListener('click', startGame);
   document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
   
+  // 绑定键盘事件（全局）
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup', handleKeyUp);
+  
+  // 手机控制
   setupMobileControls();
+  
+  // 初始绘制
   requestAnimationFrame(gameLoop);
 };
+function handleKeyDown(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    keys.left = true;
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    keys.right = true;
+  }
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+    doJump();
+  }
+}
+function handleKeyUp(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    keys.left = false;
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    keys.right = false;
+  }
+}
 function setupMobileControls() {
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
@@ -243,8 +270,8 @@ function setupMobileControls() {
 function doJump() {
   if (gameState === 'playing' && player.onGround) {
     player.vy = CONFIG.jumpForce;
-    player.onGround = false;
-  }
+player.onGround = false;
+}
 }
 function initLevel(level) {
   player = {
@@ -264,21 +291,16 @@ function initLevel(level) {
     height: CONFIG.doorHeight
   };
   
-  // 坑洞（第二关开始有）
   pits = [];
   if (level >= 2) {
     const pitCount = Math.min(level - 1, 3);
     for (let i = 0; i < pitCount; i++) {
       const pitWidth = 40 + Math.random() * 30;
       const pitX = 200 + i * 180 + Math.random() * 50;
-pits.push({
-x: pitX,
-width: pitWidth,
-y: CONFIG.groundY
-});
-}
-}
-  // 平台
+      pits.push({ x: pitX, width: pitWidth, y: CONFIG.groundY });
+    }
+  }
+  
   platforms = [];
   if (level >= 3) {
     platforms.push(
@@ -292,6 +314,7 @@ y: CONFIG.groundY
   frames = 0;
 }
 function startGame() {
+  console.log('Game started!');
   gameState = 'playing';
   currentLevel = 1;
   initLevel(currentLevel);
@@ -326,32 +349,26 @@ function update() {
   if (gameState !== 'playing') return;
   frames++;
   
-  // 玩家移动
   if (keys.left) player.x -= CONFIG.playerSpeed;
   if (keys.right) player.x += CONFIG.playerSpeed;
   player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
   
-  // 重力
   player.vy += CONFIG.gravity;
   player.y += player.vy;
   
-  // 检查是否在坑洞上方
   const playerCenterX = player.x + player.width / 2;
   const inPit = pits.some(pit => 
     playerCenterX > pit.x && playerCenterX < pit.x + pit.width
   );
   
-  // 地面碰撞
   if (!inPit && player.y + player.height >= CONFIG.groundY) {
     player.y = CONFIG.groundY - player.height;
     player.vy = 0;
     player.onGround = true;
   } else if (inPit && player.y + player.height >= CONFIG.groundY) {
-    // 在坑里，继续下落
     player.onGround = false;
   }
   
-  // 掉出屏幕 = 死亡
   if (player.y > canvas.height) {
     gameOver('掉进坑里了！');
     return;
@@ -374,7 +391,6 @@ function update() {
 }
 function spawnBalls() {
   const spawnRate = Math.max(25, 50 - currentLevel * 5);
-  
   if (frames % spawnRate !== 0) return;
   
   if (currentLevel === 1) {
@@ -386,19 +402,19 @@ function spawnBalls() {
       type: 'big'
     });
   } else if (currentLevel === 2) {
-    const isOddRow = Math.floor(frames / spawnRate) % 2 === 0;
-    const offset = isOddRow ? 60 : 120;
-    for (let i = 0; i < 4; i++) {
-      balls.push({
-        x: offset + i * 140,
-        y: -18,
-        radius: 14,
-        speed: 4,
-        type: 'small'
-      });
-    }
-  } else {
-    if (Math.random() < 0.5) {
+const isOddRow = Math.floor(frames / spawnRate) % 2 === 0;
+const offset = isOddRow ? 60 : 120;
+for (let i = 0; i < 4; i++) {
+balls.push({
+x: offset + i * 140,
+y: -18,
+radius: 14,
+speed: 4,
+type: 'small'
+});
+}
+} else {
+if (Math.random() < 0.5) {
 balls.push({
 x: Math.random() * (canvas.width - 50) + 25,
 y: -35,
@@ -469,7 +485,6 @@ function draw() {
   
   if (gameState === 'start') return;
   
-  // 画平台
   for (const plat of platforms) {
     ctx.fillStyle = CONFIG.colors.platform;
     ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
@@ -477,88 +492,63 @@ function draw() {
     ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
   }
   
-  // 画地面（带坑洞）
   drawGroundWithPits();
-  
   drawDoor();
   drawPlayer();
   
   for (const ball of balls) drawBall(ball);
 }
 function drawGroundWithPits() {
-  // 先画完整地面
   ctx.fillStyle = CONFIG.colors.ground;
   ctx.fillRect(0, CONFIG.groundY, canvas.width, CONFIG.groundHeight);
-  
-  // 地面顶部装饰线
   ctx.fillStyle = CONFIG.colors.groundTop;
   ctx.fillRect(0, CONFIG.groundY, canvas.width, 5);
-  
-  // 挖坑
   ctx.fillStyle = CONFIG.colors.pit;
   for (const pit of pits) {
     ctx.fillRect(pit.x, CONFIG.groundY, pit.width, CONFIG.groundHeight);
   }
 }
 function drawPlayer() {
-  const x = player.x;
-  const y = player.y;
-  
+  const x = player.x, y = player.y;
   ctx.fillStyle = CONFIG.colors.player;
-  
-  // 头
   ctx.fillRect(x + 3, y, 8, 8);
-  
-  // 眼睛
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(x + 5, y + 2, 1, 2);
   ctx.fillRect(x + 8, y + 2, 1, 2);
-  
-  // 身体
   ctx.fillStyle = CONFIG.colors.player;
   ctx.fillRect(x + 4, y + 8, 6, 12);
-  
-  // 腿
   const legOffset = Math.sin(frames * 0.3) * 2;
-  if (player.onGround) {
-    ctx.fillRect(x + 4 + legOffset, y + 20, 2, 8);
-    ctx.fillRect(x + 8 - legOffset, y + 20, 2, 8);
-  } else {
+if (player.onGround) {
+ctx.fillRect(x + 4 + legOffset, y + 20, 2, 8);
+ctx.fillRect(x + 8 - legOffset, y + 20, 2, 8);
+} else {
 ctx.fillRect(x + 3, y + 20, 2, 6);
 ctx.fillRect(x + 9, y + 20, 2, 6);
 }
-  // 手臂
-  ctx.fillRect(x + 1, y + 9, 3, 7);
-  ctx.fillRect(x + 10, y + 9, 3, 7);
+ctx.fillRect(x + 1, y + 9, 3, 7);
+ctx.fillRect(x + 10, y + 9, 3, 7);
 }
 function drawBall(ball) {
   ctx.shadowColor = CONFIG.colors.ball;
   ctx.shadowBlur = 12;
-  
   ctx.beginPath();
   ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
   ctx.fillStyle = CONFIG.colors.ball;
   ctx.fill();
-  
   ctx.beginPath();
   ctx.arc(ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, ball.radius * 0.25, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
   ctx.fill();
-  
   ctx.shadowBlur = 0;
 }
 function drawDoor() {
-  const x = door.x;
-  const y = door.y;
-  
+  const x = door.x, y = door.y;
   ctx.fillStyle = '#238636';
   ctx.fillRect(x, y, 5, door.height);
   ctx.fillRect(x + door.width - 5, y, 5, door.height);
   ctx.fillRect(x, y, door.width, 5);
-  
   ctx.fillStyle = 'rgba(63, 185, 80, 0.3)';
   ctx.fillRect(x + 5, y + 5, door.width - 10, door.height - 5);
-  
   ctx.beginPath();
   ctx.arc(x + door.width - 12, y + door.height / 2, 4, 0, Math.PI * 2);
   ctx.fillStyle = '#f0e68c';
