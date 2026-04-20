@@ -7,7 +7,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a1a2e;
+      background: #0d1117;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -17,11 +17,11 @@
     }
     #gameContainer {
       position: relative;
-      width: 400px;
-      height: 600px;
-      background: linear-gradient(180deg, #16213e 0%, #1a1a2e 100%);
-      border: 4px solid #0f3460;
-      border-radius: 8px;
+      width: 800px;
+      height: 450px;
+      background: #161b22;
+      border: 3px solid #30363d;
+      border-radius: 4px;
       overflow: hidden;
     }
     #gameCanvas { display: block; }
@@ -32,7 +32,7 @@
       padding: 10px;
       display: flex;
       justify-content: space-between;
-      color: #fff;
+      color: #c9d1d9;
       font-size: 14px;
       z-index: 10;
     }
@@ -40,151 +40,185 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      color: #fff;
+      color: #c9d1d9;
       z-index: 20;
     }
     #startScreen h1, #gameOverScreen h1, #winScreen h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-      color: #e94560;
-      text-shadow: 0 0 10px #e94560;
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #58a6ff;
     }
     #startScreen p, #gameOverScreen p, #winScreen p {
-      font-size: 14px;
-      margin-bottom: 30px;
-      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 25px;
+      color: #8b949e;
       text-align: center;
-      line-height: 1.6;
+      line-height: 1.8;
     }
     .btn {
-      padding: 12px 40px;
-      font-size: 18px;
-      background: #e94560;
+      padding: 10px 35px;
+      font-size: 16px;
+      background: #238636;
       color: #fff;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-family: inherit;
       transition: all 0.2s;
-      box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
     }
-    .btn:hover {
-      background: #ff6b6b;
-      transform: scale(1.05);
-    }
-    #gameOverScreen h1 { color: #ff4757; }
-    #winScreen h1 { color: #2ed573; text-shadow: 0 0 10px #2ed573; }
+    .btn:hover { background: #2ea043; }
+    #gameOverScreen h1 { color: #f85149; }
+    #winScreen h1 { color: #3fb950; }
     .hidden { display: none !important; }
+    
+    #rotateHint {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #0d1117;
+      color: #c9d1d9;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 100;
+      text-align: center;
+    }
+    #rotateHint p {
+      font-size: 16px;
+      margin-top: 20px;
+      color: #8b949e;
+    }
+    
     #mobileControls {
       position: absolute;
-      bottom: 20px; left: 0;
-      width: 100%;
+      bottom: 15px;
+      left: 15px;
       display: none;
-      justify-content: space-between;
-      padding: 0 20px;
+      gap: 15px;
       z-index: 15;
     }
     .controlBtn {
-      width: 60px; height: 60px;
-      background: rgba(233, 69, 96, 0.3);
-      border: 2px solid #e94560;
-      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      background: rgba(88, 166, 255, 0.2);
+      border: 2px solid #58a6ff;
+      border-radius: 8px;
       color: #fff;
-      font-size: 24px;
+      font-size: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
       user-select: none;
     }
-    .controlBtn:active { background: rgba(233, 69, 96, 0.6); }
-    @media (max-width: 500px) {
+    .controlBtn:active { background: rgba(88, 166, 255, 0.5); }
+    
+    #jumpBtn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      width: 70px;
+      height: 70px;
+      background: rgba(63, 185, 80, 0.2);
+      border: 2px solid #3fb950;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 18px;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 15;
+    }
+    #jumpBtn:active { background: rgba(63, 185, 80, 0.5); }
+    
+    @media (orientation: portrait) {
+      #rotateHint { display: flex; }
+      #gameContainer { display: none; }
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
       #gameContainer { width: 100vw; height: 100vh; border: none; border-radius: 0; }
-      #mobileControls { display: flex; }
+      #mobileControls, #jumpBtn { display: flex; }
     }
   </style>
 </head>
 <body>
-  <div id="gameContainer">
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div id="ui">
-      <span id="levelDisplay">关卡：1</span>
-      <span id="progressDisplay">进度：■■■■□</span>
-    </div>
-    <div id="startScreen">
-      <h1>🔴 躲避圆球</h1>
-      <p>左右移动躲避下落的圆球<br>到达右侧绿色门即可通关</p>
-      <p>💻 键盘：← → 移动<br>📱 手机：点击左右按钮</p>
-      <button class="btn" id="startBtn">开始游戏</button>
-    </div>
-    <div id="gameOverScreen" class="hidden">
-      <h1>💀 游戏结束</h1>
-      <p id="deathReason">被圆球击中了！</p>
-      <button class="btn" id="retryBtn">再试一次</button>
-    </div>
-    <div id="winScreen" class="hidden">
-      <h1>🎉 恭喜通关！</h1>
-      <p>你成功到达了出口！</p>
-      <button class="btn" id="nextLevelBtn">下一关</button>
-    </div>
-    <div id="mobileControls">
-      <div class="controlBtn" id="leftBtn">◀</div>
-      <div class="controlBtn" id="rightBtn">▶</div>
-    </div>
-  </div>
+  <div id="rotateHint">
+    <h1>📱 请横屏游玩</h1>
+<p>将手机旋转 90 度获得最佳体验</p>
+</div>
 
-  <script>
+<div id="gameContainer">
+<canvas id="gameCanvas" width="800" height="450"></canvas>
+<div id="ui">
+<span id="levelDisplay">关卡：1</span>
+<span id="progressDisplay">进度：■■■■□</span>
+</div>
+<div id="startScreen">
+<h1>🔴 躲避圆球</h1>
+<p>左右移动 + 跳跃躲避圆球
+避开坑洞，到达绿色门通关</p>
+<p>💻 键盘：← → 移动，空格跳跃
+📱 横屏 + 点击下方按钮</p>
+<button class="btn" id="startBtn">开始游戏</button>
+</div>
+<div id="gameOverScreen" class="hidden">
+<h1>💀 游戏结束</h1>
+<p id="deathReason">被圆球击中了！</p>
+<button class="btn" id="retryBtn">再试一次</button>
+</div>
+<div id="winScreen" class="hidden">
+<h1>🎉 恭喜通关！</h1>
+<p>你成功到达了出口！</p>
+<button class="btn" id="nextLevelBtn">下一关</button>
+</div>
+<div id="mobileControls">
+<div class="controlBtn" id="leftBtn">◀</div>
+<div class="controlBtn" id="rightBtn">▶</div>
+</div>
+<div id="jumpBtn">跳</div>
+</div>
+
+<script>
 const CONFIG = {
 playerSpeed: 5,
-playerWidth: 30,
-playerHeight: 50,
-ballBaseSpeed: 2,
-ballSpeedIncrease: 0.5,
-ballSpawnRate: 60,
-doorWidth: 50,
-doorHeight: 70,
+playerWidth: 14,
+playerHeight: 28,
+jumpForce: -13,
+gravity: 0.65,
+groundY: 400,
+groundHeight: 50,
+doorWidth: 45,
+doorHeight: 60,
 colors: {
 player: '#ffffff',
-ball: '#2ed573',
-door: '#7bed9f',
-doorFrame: '#2ed573',
-platform: '#0f3460',
-progress: '#e94560'
+ball: '#3fb950',
+ground: '#238636',
+groundTop: '#3fb950',
+platform: '#21262d',
+platformBorder: '#30363d',
+pit: '#0d1117'
 }
 };
 let canvas, ctx;
 let gameState = 'start';
 let currentLevel = 1;
 let frames = 0;
-let player, balls, door, platforms;
-let keys = { left: false, right: false };
+let player, balls, door, platforms, pits;
+let keys = { left: false, right: false, jump: false };
 window.onload = () => {
   canvas = document.getElementById('gameCanvas');
   ctx = canvas.getContext('2d');
   
-  const startBtn = document.getElementById('startBtn');
-  startBtn.addEventListener('click', startGame);
-  
-  const retryBtn = document.getElementById('retryBtn');
-  retryBtn.addEventListener('click', startGame);
-  
-  const nextLevelBtn = document.getElementById('nextLevelBtn');
-  nextLevelBtn.addEventListener('click', nextLevel);
-  
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
-    if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
-  });
-  
-  document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
-    if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
-  });
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('retryBtn').addEventListener('click', startGame);
+  document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
   
   setupMobileControls();
   requestAnimationFrame(gameLoop);
@@ -192,35 +226,72 @@ window.onload = () => {
 function setupMobileControls() {
   const leftBtn = document.getElementById('leftBtn');
   const rightBtn = document.getElementById('rightBtn');
+  const jumpBtn = document.getElementById('jumpBtn');
   
   leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
   leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; });
   rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
   rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; });
+  jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); doJump(); });
   
   leftBtn.addEventListener('mousedown', () => keys.left = true);
   leftBtn.addEventListener('mouseup', () => keys.left = false);
   rightBtn.addEventListener('mousedown', () => keys.right = true);
   rightBtn.addEventListener('mouseup', () => keys.right = false);
+  jumpBtn.addEventListener('mousedown', doJump);
+}
+function doJump() {
+  if (gameState === 'playing' && player.onGround) {
+    player.vy = CONFIG.jumpForce;
+    player.onGround = false;
+  }
 }
 function initLevel(level) {
-  player = { x: 50, y: canvas.height - 100, width: CONFIG.playerWidth, height: CONFIG.playerHeight };
-  door = { x: canvas.width - 80, y: canvas.height - 80, width: CONFIG.doorWidth, height: CONFIG.doorHeight };
+  player = {
+    x: 50,
+    y: CONFIG.groundY - CONFIG.playerHeight,
+    width: CONFIG.playerWidth,
+    height: CONFIG.playerHeight,
+    vx: 0,
+    vy: 0,
+    onGround: true
+  };
+  
+  door = {
+    x: canvas.width - 70,
+    y: CONFIG.groundY - CONFIG.doorHeight,
+    width: CONFIG.doorWidth,
+    height: CONFIG.doorHeight
+  };
+  
+  // 坑洞（第二关开始有）
+  pits = [];
+  if (level >= 2) {
+    const pitCount = Math.min(level - 1, 3);
+    for (let i = 0; i < pitCount; i++) {
+      const pitWidth = 40 + Math.random() * 30;
+      const pitX = 200 + i * 180 + Math.random() * 50;
+pits.push({
+x: pitX,
+width: pitWidth,
+y: CONFIG.groundY
+});
+}
+}
+  // 平台
   platforms = [];
-  const platformCount = Math.min(level, 5);
-  for (let i = 0; i < platformCount; i++) {
-    platforms.push({
-      x: Math.random() * (canvas.width - 100),
-      y: 150 + i * 100,
-      width: 80 + Math.random() * 60,
-      height: 15
-    });
+  if (level >= 3) {
+    platforms.push(
+      { x: 150, y: 280, width: 100, height: 12 },
+      { x: 350, y: 320, width: 100, height: 12 },
+      { x: 550, y: 360, width: 100, height: 12 }
+    );
   }
+  
   balls = [];
   frames = 0;
 }
 function startGame() {
-  console.log('Starting game...');
   gameState = 'playing';
   currentLevel = 1;
   initLevel(currentLevel);
@@ -246,34 +317,48 @@ function winLevel() {
   document.getElementById('winScreen').classList.remove('hidden');
 }
 function updateUI() {
-document.getElementById('levelDisplay').textContent = '关卡：' + currentLevel;
-const progress = Math.min(currentLevel, 5);
-const bars = '■'.repeat(progress) + '□'.repeat(5 - progress);
-document.getElementById('progressDisplay').textContent = '进度：' + bars;
+  document.getElementById('levelDisplay').textContent = '关卡：' + currentLevel;
+  const progress = Math.min(currentLevel, 5);
+  const bars = '■'.repeat(progress) + '□'.repeat(5 - progress);
+  document.getElementById('progressDisplay').textContent = '进度：' + bars;
 }
 function update() {
   if (gameState !== 'playing') return;
   frames++;
   
+  // 玩家移动
   if (keys.left) player.x -= CONFIG.playerSpeed;
   if (keys.right) player.x += CONFIG.playerSpeed;
   player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
   
-  const spawnRate = Math.max(20, CONFIG.ballSpawnRate - currentLevel * 5);
-  if (frames % spawnRate === 0) {
-    const ballSize = 15 + Math.random() * 20;
-    balls.push({
-      x: Math.random() * (canvas.width - ballSize * 2) + ballSize,
-      y: -ballSize,
-      radius: ballSize,
-      speed: CONFIG.ballBaseSpeed + (currentLevel - 1) * CONFIG.ballSpeedIncrease + Math.random()
-    });
+  // 重力
+  player.vy += CONFIG.gravity;
+  player.y += player.vy;
+  
+  // 检查是否在坑洞上方
+  const playerCenterX = player.x + player.width / 2;
+  const inPit = pits.some(pit => 
+    playerCenterX > pit.x && playerCenterX < pit.x + pit.width
+  );
+  
+  // 地面碰撞
+  if (!inPit && player.y + player.height >= CONFIG.groundY) {
+    player.y = CONFIG.groundY - player.height;
+    player.vy = 0;
+    player.onGround = true;
+  } else if (inPit && player.y + player.height >= CONFIG.groundY) {
+    // 在坑里，继续下落
+    player.onGround = false;
   }
   
-  for (let i = balls.length - 1; i >= 0; i--) {
-    balls[i].y += balls[i].speed;
-    if (balls[i].y - balls[i].radius > canvas.height) balls.splice(i, 1);
+  // 掉出屏幕 = 死亡
+  if (player.y > canvas.height) {
+    gameOver('掉进坑里了！');
+    return;
   }
+  
+  spawnBalls();
+  updateBalls();
   
   for (const ball of balls) {
     if (checkCircleRectCollision(ball, player)) {
@@ -285,6 +370,75 @@ function update() {
   if (checkRectCollision(player, door)) {
     winLevel();
     return;
+  }
+}
+function spawnBalls() {
+  const spawnRate = Math.max(25, 50 - currentLevel * 5);
+  
+  if (frames % spawnRate !== 0) return;
+  
+  if (currentLevel === 1) {
+    balls.push({
+      x: Math.random() * (canvas.width - 50) + 25,
+      y: -35,
+      radius: 30 + Math.random() * 20,
+      speed: 3 + Math.random(),
+      type: 'big'
+    });
+  } else if (currentLevel === 2) {
+    const isOddRow = Math.floor(frames / spawnRate) % 2 === 0;
+    const offset = isOddRow ? 60 : 120;
+    for (let i = 0; i < 4; i++) {
+      balls.push({
+        x: offset + i * 140,
+        y: -18,
+        radius: 14,
+        speed: 4,
+        type: 'small'
+      });
+    }
+  } else {
+    if (Math.random() < 0.5) {
+balls.push({
+x: Math.random() * (canvas.width - 50) + 25,
+y: -35,
+radius: 30 + Math.random() * 20,
+speed: 3 + Math.random() + currentLevel * 0.4,
+type: 'big'
+});
+} else {
+const offset = Math.random() < 0.5 ? 60 : 120;
+for (let i = 0; i < 3; i++) {
+balls.push({
+x: offset + i * 150,
+y: -18,
+radius: 14,
+speed: 4.5 + currentLevel * 0.3,
+type: 'small'
+});
+}
+}
+}
+}
+function updateBalls() {
+  for (let i = balls.length - 1; i >= 0; i--) {
+    const ball = balls[i];
+    ball.y += ball.speed;
+    
+    let onPlatform = false;
+    for (const plat of platforms) {
+      if (ball.x > plat.x && ball.x < plat.x + plat.width &&
+          ball.y + ball.radius >= plat.y && ball.y + ball.radius <= plat.y + plat.height + ball.speed) {
+        ball.y = plat.y - ball.radius;
+        ball.speed = 0;
+        onPlatform = true;
+        break;
+      }
+    }
+    
+    if (!onPlatform && ball.y - ball.radius > canvas.height) {
+      balls.splice(i, 1);
+    }
   }
 }
 function checkCircleRectCollision(circle, rect) {
@@ -301,72 +455,113 @@ function checkRectCollision(rect1, rect2) {
          rect1.y + rect1.height > rect2.y;
 }
 function draw() {
-  ctx.fillStyle = '#1a1a2e';
+  ctx.fillStyle = '#161b22';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  ctx.strokeStyle = 'rgba(15, 52, 96, 0.3)';
+  ctx.strokeStyle = '#21262d';
   ctx.lineWidth = 1;
-  for (let x = 0; x < canvas.width; x += 40) {
+  for (let x = 0; x < canvas.width; x += 50) {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
   }
-  for (let y = 0; y < canvas.height; y += 40) {
+  for (let y = 0; y < canvas.height; y += 50) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
   }
   
   if (gameState === 'start') return;
   
-  ctx.fillStyle = CONFIG.colors.platform;
-  for (const platform of platforms) {
-    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-    ctx.strokeStyle = '#1a5276';
-    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+  // 画平台
+  for (const plat of platforms) {
+    ctx.fillStyle = CONFIG.colors.platform;
+    ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+    ctx.strokeStyle = CONFIG.colors.platformBorder;
+    ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
   }
+  
+  // 画地面（带坑洞）
+  drawGroundWithPits();
   
   drawDoor();
   drawPlayer();
   
   for (const ball of balls) drawBall(ball);
 }
+function drawGroundWithPits() {
+  // 先画完整地面
+  ctx.fillStyle = CONFIG.colors.ground;
+  ctx.fillRect(0, CONFIG.groundY, canvas.width, CONFIG.groundHeight);
+  
+  // 地面顶部装饰线
+  ctx.fillStyle = CONFIG.colors.groundTop;
+  ctx.fillRect(0, CONFIG.groundY, canvas.width, 5);
+  
+  // 挖坑
+  ctx.fillStyle = CONFIG.colors.pit;
+  for (const pit of pits) {
+    ctx.fillRect(pit.x, CONFIG.groundY, pit.width, CONFIG.groundHeight);
+  }
+}
 function drawPlayer() {
-  const x = player.x, y = player.y;
+  const x = player.x;
+  const y = player.y;
+  
   ctx.fillStyle = CONFIG.colors.player;
-  ctx.fillRect(x + 10, y + 20, 10, 25);
-  ctx.beginPath();
-  ctx.arc(x + 15, y + 12, 10, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(x + 10, y + 45, 4, 8);
-  ctx.fillRect(x + 16, y + 45, 4, 8);
-  const armSwing = Math.sin(frames * 0.2) * 5;
-  ctx.fillRect(x + 5 + armSwing, y + 22, 5, 12);
-  ctx.fillRect(x + 20 - armSwing, y + 22, 5, 12);
-  ctx.fillStyle = '#000';
-  ctx.fillRect(x + 12, y + 10, 2, 3);
-  ctx.fillRect(x + 16, y + 10, 2, 3);
+  
+  // 头
+  ctx.fillRect(x + 3, y, 8, 8);
+  
+  // 眼睛
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(x + 5, y + 2, 1, 2);
+  ctx.fillRect(x + 8, y + 2, 1, 2);
+  
+  // 身体
+  ctx.fillStyle = CONFIG.colors.player;
+  ctx.fillRect(x + 4, y + 8, 6, 12);
+  
+  // 腿
+  const legOffset = Math.sin(frames * 0.3) * 2;
+  if (player.onGround) {
+    ctx.fillRect(x + 4 + legOffset, y + 20, 2, 8);
+    ctx.fillRect(x + 8 - legOffset, y + 20, 2, 8);
+  } else {
+ctx.fillRect(x + 3, y + 20, 2, 6);
+ctx.fillRect(x + 9, y + 20, 2, 6);
+}
+  // 手臂
+  ctx.fillRect(x + 1, y + 9, 3, 7);
+  ctx.fillRect(x + 10, y + 9, 3, 7);
 }
 function drawBall(ball) {
   ctx.shadowColor = CONFIG.colors.ball;
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 12;
+  
   ctx.beginPath();
   ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
   ctx.fillStyle = CONFIG.colors.ball;
   ctx.fill();
+  
   ctx.beginPath();
-  ctx.arc(ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, ball.radius * 0.3, 0, Math.PI * 2);
-ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-ctx.fill();
-ctx.shadowBlur = 0;
+  ctx.arc(ball.x - ball.radius * 0.3, ball.y - ball.radius * 0.3, ball.radius * 0.25, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.fill();
+  
+  ctx.shadowBlur = 0;
 }
 function drawDoor() {
-  const x = door.x, y = door.y;
-  ctx.fillStyle = CONFIG.colors.doorFrame;
+  const x = door.x;
+  const y = door.y;
+  
+  ctx.fillStyle = '#238636';
   ctx.fillRect(x, y, 5, door.height);
   ctx.fillRect(x + door.width - 5, y, 5, door.height);
   ctx.fillRect(x, y, door.width, 5);
-  ctx.fillStyle = 'rgba(123, 237, 159, 0.3)';
+  
+  ctx.fillStyle = 'rgba(63, 185, 80, 0.3)';
   ctx.fillRect(x + 5, y + 5, door.width - 10, door.height - 5);
+  
   ctx.beginPath();
   ctx.arc(x + door.width - 12, y + door.height / 2, 4, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffd700';
+  ctx.fillStyle = '#f0e68c';
   ctx.fill();
 }
 function gameLoop() {
